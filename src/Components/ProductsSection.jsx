@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from './card';
 
-const ProductsSection = ({ category }) => {
+const ProductsSection = ({ category, searchQuery }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('Productos');
@@ -11,8 +11,12 @@ const ProductsSection = ({ category }) => {
     
     let apiUrl = 'https://dummyjson.com/products';
     
-    // Si no es "todos", filtrar por categoría
-    if (category !== 'todos') {
+    // Prioridad 1: Si hay búsqueda, usar endpoint de búsqueda
+    if (searchQuery) {
+      apiUrl = `https://dummyjson.com/products/search?q=${encodeURIComponent(searchQuery)}`;
+    } 
+    // Prioridad 2: Si no hay búsqueda pero hay categoría seleccionada
+    else if (category !== 'todos') {
       apiUrl = `https://dummyjson.com/products/category/${category}`;
     }
 
@@ -20,17 +24,25 @@ const ProductsSection = ({ category }) => {
       .then(res => res.json())
       .then(data => {
         setProducts(data.products || data);
-        setCategoryName(getCategoryDisplayName(category));
+        updateCategoryName(category, searchQuery, data.products?.length);
         setLoading(false);
       })
       .catch(err => {
         console.error('Error:', err);
         setLoading(false);
       });
-  }, [category]);
+  }, [category, searchQuery]);
 
-  const getCategoryDisplayName = (categoryId) => {
-    if (categoryId === 'todos') return 'Todos los productos';
+  const updateCategoryName = (currentCategory, currentSearch, productCount) => {
+    if (currentSearch) {
+      setCategoryName(`Resultados para "${currentSearch}"`);
+      return;
+    }
+
+    if (currentCategory === 'todos') {
+      setCategoryName('Todos los productos');
+      return;
+    }
     
     const categoryNames = {
       'smartphones': 'Smartphones',
@@ -56,12 +68,14 @@ const ProductsSection = ({ category }) => {
       'lighting': 'Iluminación'
     };
 
-    return categoryNames[categoryId] || categoryId;
+    setCategoryName(categoryNames[currentCategory] || currentCategory);
   };
 
   if (loading) return (
     <div className="flex justify-center items-center py-12">
-      <div className="text-lg text-gray-600">Cargando productos...</div>
+      <div className="text-lg text-gray-600">
+        {searchQuery ? 'Buscando productos...' : 'Cargando productos...'}
+      </div>
     </div>
   );
 
@@ -73,22 +87,37 @@ const ProductsSection = ({ category }) => {
             {categoryName}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {products.length} productos encontrados
+            {products.length} {searchQuery ? 'resultados' : 'productos'} encontrados
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map(product => (
-            <Card
-              key={product.id}
-              title={product.title}
-              description={`${product.description.substring(0, 100)}...`}
-              icon="📦"
-              buttonText={`$${product.price}`}
-              onButtonClick={() => console.log('Producto:', product.title)}
-            />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              No se encontraron productos
+            </h3>
+            <p className="text-gray-600">
+              {searchQuery 
+                ? `No hay resultados para "${searchQuery}". Intenta con otros términos.`
+                : 'No hay productos en esta categoría.'
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map(product => (
+              <Card
+                key={product.id}
+                title={product.title}
+                description={`${product.description.substring(0, 100)}...`}
+                icon="📦"
+                buttonText={`$${product.price}`}
+                onButtonClick={() => console.log('Producto:', product.title)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
