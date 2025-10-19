@@ -1,55 +1,9 @@
-import Card from "./Card";
+import React from 'react';
 
 const Section = () => {
-  const services = [
-    {
-      title: "Desarrollo Web",
-      description: "Creamos aplicaciones web modernas y responsivas utilizando las últimas tecnologías.",
-      icon: "🚀",
-      buttonText: "Saber más",
-      variant: "gradient"
-    },
-    {
-      title: "Apps Móviles",
-      description: "Desarrollamos aplicaciones móviles nativas e híbridas para iOS y Android.",
-      icon: "📱",
-      buttonText: "Explorar",
-      variant: "gradient"
-    },
-    {
-      title: "Diseño UI/UX",
-      description: "Diseñamos interfaces intuitivas y experiencias de usuario excepcionales.",
-      icon: "🎨",
-      buttonText: "Ver portfolio",
-      variant: "gradient"
-    },
-    {
-      title: "Consultoría TI",
-      description: "Asesoramiento especializado para optimizar tu infraestructura tecnológica.",
-      icon: "💼",
-      buttonText: "Consultar",
-      variant: "default"
-    },
-    {
-      title: "Marketing Digital",
-      description: "Estrategias digitales para aumentar tu presencia online y generar leads.",
-      icon: "📈",
-      buttonText: "Comenzar",
-      variant: "default"
-    },
-    {
-      title: "Soporte 24/7",
-      description: "Asistencia técnica continua para garantizar el funcionamiento de tus sistemas.",
-      icon: "🛠️",
-      buttonText: "Contactar",
-      variant: "default"
-    }
-  ];
-
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Header del Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">
             Nuestros Servicios
@@ -59,19 +13,42 @@ const Section = () => {
           </p>
         </div>
 
-        {/* Grid de contenido con Componentes Card */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => (
-            <Card
-              key={index}
-              title={service.title}
-              description={service.description}
-              icon={service.icon}
-              buttonText={service.buttonText}
-              variant={service.variant}
-              onButtonClick={() => console.log(`${service.title} click`)}
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-gray-50 p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-white text-xl">🚀</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              Desarrollo Web
+            </h3>
+            <p className="text-gray-600">
+              Creamos aplicaciones web modernas y responsivas utilizando las últimas tecnologías.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-white text-xl">📱</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              Apps Móviles
+            </h3>
+            <p className="text-gray-600">
+              Desarrollamos aplicaciones móviles nativas e híbridas para iOS y Android.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-white text-xl">🎨</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              Diseño UI/UX
+            </h3>
+            <p className="text-gray-600">
+              Diseñamos interfaces intuitivas y experiencias de usuario excepcionales.
+            </p>
+          </div>
         </div>
       </div>
     </section>
