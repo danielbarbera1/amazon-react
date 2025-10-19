@@ -1,4 +1,4 @@
-
+import React from 'react';
 import Navbar from './Components/Navbar';
 import CategoriesAside from './Components/CategoriesAside';
 import Section from './Components/Section';
