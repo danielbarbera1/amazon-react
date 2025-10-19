@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './Components/Navbar';
 import CategoriesAside from './Components/CategoriesAside';
 import HeroBanner from './Components/HeroBanner';
-import FeaturesSection from './Components/FeaturesSection';  // ← Agregar esta línea
-import Section from './Components/Section';
+import FeaturesSection from './Components/FeaturesSection';
+
 import ProductsSection from './Components/ProductsSection';
 
 function App() {
+  const [selectedCategory, setSelectedCategory] = useState('todos');
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex">
-        <CategoriesAside />
+        <CategoriesAside 
+          selectedCategory={selectedCategory}
+          onCategorySelect={setSelectedCategory}
+        />
         
         <main className="flex-1">
           <HeroBanner />
-          <FeaturesSection />  {/* ← Agregar aquí */}
-          <Section />
-          <ProductsSection />
+          <FeaturesSection />
+          <ProductsSection category={selectedCategory} />
         </main>
       </div>
     </div>

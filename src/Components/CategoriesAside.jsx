@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const CategoriesAside = () => {
-  const [selectedCategory, setSelectedCategory] = useState('todos');
+const CategoriesAside = ({ selectedCategory, onCategorySelect }) => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,7 +77,6 @@ const CategoriesAside = () => {
 
   return (
     <aside className="w-80 bg-white border-r border-gray-200 min-h-screen p-6">
-      {/* Header */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Categorías</h2>
         <p className="text-gray-600">Explora nuestros productos</p>
@@ -86,7 +84,7 @@ const CategoriesAside = () => {
 
       {/* Categoría "Todos" */}
       <button
-        onClick={() => setSelectedCategory('todos')}
+        onClick={() => onCategorySelect('todos')}
         className={`w-full flex items-center justify-between p-4 rounded-xl transition duration-200 mb-3 ${
           selectedCategory === 'todos'
             ? 'bg-blue-50 text-blue-600 border-2 border-blue-200'
@@ -107,7 +105,7 @@ const CategoriesAside = () => {
         {categories.map((category) => (
           <button
             key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
+            onClick={() => onCategorySelect(category.id)}
             className={`w-full flex items-center justify-between p-3 rounded-lg transition duration-200 ${
               selectedCategory === category.id
                 ? 'bg-blue-50 text-blue-600 border border-blue-200'

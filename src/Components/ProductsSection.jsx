@@ -1,22 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import Card from './Card';
+import Card from './card';
 
-const ProductsSection = () => {
+const ProductsSection = ({ category }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoryName, setCategoryName] = useState('Productos');
 
   useEffect(() => {
-    fetch('https://dummyjson.com/products/category/smartphones')
+    setLoading(true);
+    
+    let apiUrl = 'https://dummyjson.com/products';
+    
+    // Si no es "todos", filtrar por categoría
+    if (category !== 'todos') {
+      apiUrl = `https://dummyjson.com/products/category/${category}`;
+    }
+
+    fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
-        setProducts(data.products);
+        setProducts(data.products || data);
+        setCategoryName(getCategoryDisplayName(category));
         setLoading(false);
       })
       .catch(err => {
         console.error('Error:', err);
         setLoading(false);
       });
-  }, []);
+  }, [category]);
+
+  const getCategoryDisplayName = (categoryId) => {
+    if (categoryId === 'todos') return 'Todos los productos';
+    
+    const categoryNames = {
+      'smartphones': 'Smartphones',
+      'laptops': 'Laptops',
+      'fragrances': 'Fragancias',
+      'skincare': 'Cuidado de la Piel',
+      'beauty': 'Belleza',
+      'groceries': 'Comestibles',
+      'home-decoration': 'Decoración del Hogar',
+      'furniture': 'Muebles',
+      'tops': 'Tops',
+      'womens-dresses': 'Vestidos de Mujer',
+      'womens-shoes': 'Zapatos de Mujer',
+      'mens-shirts': 'Camisas de Hombre',
+      'mens-shoes': 'Zapatos de Hombre',
+      'mens-watches': 'Relojes de Hombre',
+      'womens-watches': 'Relojes de Mujer',
+      'womens-bags': 'Bolsos de Mujer',
+      'womens-jewellery': 'Joyas de Mujer',
+      'sunglasses': 'Gafas de Sol',
+      'automotive': 'Automotriz',
+      'motorcycle': 'Motocicletas',
+      'lighting': 'Iluminación'
+    };
+
+    return categoryNames[categoryId] || categoryId;
+  };
 
   if (loading) return (
     <div className="flex justify-center items-center py-12">
@@ -29,10 +70,10 @@ const ProductsSection = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            Smartphones
+            {categoryName}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Descubre nuestra selección de smartphones de última generación.
+            {products.length} productos encontrados
           </p>
         </div>
 
@@ -42,7 +83,7 @@ const ProductsSection = () => {
               key={product.id}
               title={product.title}
               description={`${product.description.substring(0, 100)}...`}
-              icon="📱"
+              icon="📦"
               buttonText={`$${product.price}`}
               onButtonClick={() => console.log('Producto:', product.title)}
             />
