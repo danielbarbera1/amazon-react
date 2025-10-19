@@ -1,7 +1,7 @@
-// Components/CategoriesAside.jsx
+// src/Components/CategoriesAside.jsx
 import React, { useState } from 'react';
 
-const Aside = () => {
+const CategoriesAside = () => {
   const [selectedCategory, setSelectedCategory] = useState('todos');
 
   const categories = [
@@ -15,12 +15,10 @@ const Aside = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-6">
-      {/* Título */}
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-800">Categorías</h2>
       </div>
 
-      {/* Lista de Categorías */}
       <div className="space-y-2">
         {categories.map((category) => (
           <button
@@ -46,4 +44,4 @@ const Aside = () => {
   );
 };
 
-export default Aside;
+export default CategoriesAside;
