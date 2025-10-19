@@ -1,9 +1,8 @@
-// src/App.jsx
 
 import Navbar from './Components/Navbar';
 import Sidebar from './Components/Aside';
 import Section from './Components/Section';
-
+import ProductsSection from './Components/ProductsSection';
 
 function App() {
   return (
@@ -14,6 +13,7 @@ function App() {
         
         <main className="flex-1">
           <Section />
+          <ProductsSection />
         </main>
       </div>
     </div>
