@@ -39,9 +39,33 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
         // data puede venir como { products: [...] } o como un array
         let items = Array.isArray(data) ? data : (data.products || []);
 
-        // Filtrar por subcategoría (brand) si corresponde
+        // Si estamos haciendo una búsqueda por texto y la API no devolvió
+        // resultados, intentamos un fallback: descargar una lista amplia de
+        // productos y filtrar localmente por título/descripcion/marca
+        if (searchQuery && (!items || items.length === 0)) {
+          try {
+            const fallbackRes = await fetch('https://dummyjson.com/products?limit=100');
+            const fallbackData = await fallbackRes.json();
+            const fallbackItems = fallbackData.products || [];
+            const q = String(searchQuery).toLowerCase();
+            items = fallbackItems.filter(p => {
+              if (!p) return false;
+              const title = String(p.title || '').toLowerCase();
+              const desc = String(p.description || '').toLowerCase();
+              const brand = String(p.brand || '').toLowerCase();
+              return title.includes(q) || desc.includes(q) || brand.includes(q);
+            });
+            // Indicar en debug que se usó fallback
+            setLastApiUrl(prev => prev ? prev + ' (fallback)' : 'fallback');
+          } catch (e) {
+            console.warn('Fallback search failed', e);
+          }
+        }
+
+        // Filtrar por subcategoría (brand) si corresponde (case-insensitive)
         if (subcategory && category && category !== 'todos') {
-          items = (items || []).filter(p => p && p.brand === subcategory);
+          const sc = String(subcategory).toLowerCase();
+          items = (items || []).filter(p => p && String(p.brand || '').toLowerCase() === sc);
         }
 
   setProducts(items || []);

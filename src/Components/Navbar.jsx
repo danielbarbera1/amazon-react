@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-const Navbar = () => {
+const Navbar = ({ searchQuery, onSearchChange }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -17,11 +17,18 @@ const Navbar = () => {
 
           {/* Barra de búsqueda - Desktop */}
           <div className="hidden md:flex flex-1 max-w-lg mx-4">
-            <div className="relative w-full">
+            <form
+              className="relative w-full"
+              onSubmit={(e) => { e.preventDefault(); }}
+              role="search"
+            >
               <input
                 type="text"
                 placeholder="Buscar..."
+                value={searchQuery || ''}
+                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="Buscar productos"
               />
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg
@@ -38,7 +45,7 @@ const Navbar = () => {
                   />
                 </svg>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Botones de login/registro - Desktop */}
@@ -93,7 +100,10 @@ const Navbar = () => {
                   <input
                     type="text"
                     placeholder="Buscar..."
+                    value={searchQuery || ''}
+                    onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Buscar productos"
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg
