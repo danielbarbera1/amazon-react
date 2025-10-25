@@ -6,39 +6,51 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('Productos');
 
+  const getApiUrl = (category, searchQuery) => {
+    if (searchQuery) return `https://dummyjson.com/products/search?q=${encodeURIComponent(searchQuery)}`;
+    if (category && category !== 'todos') return `https://dummyjson.com/products/category/${encodeURIComponent(category)}`;
+    return 'https://dummyjson.com/products';
+  };
+
   useEffect(() => {
-    setLoading(true);
-    
-    let apiUrl = 'https://dummyjson.com/products';
-    
-    // Prioridad 1: Si hay búsqueda, usar endpoint de búsqueda
-    if (searchQuery) {
-      apiUrl = `https://dummyjson.com/products/search?q=${encodeURIComponent(searchQuery)}`;
-    } 
-    // Prioridad 2: Si no hay búsqueda pero hay categoría seleccionada
-    else if (category !== 'todos') {
-      apiUrl = `https://dummyjson.com/products/category/${category}`;
-    }
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const apiUrl = getApiUrl(category, searchQuery);
+        // Debug: mostrar la URL que estamos consultando
+        console.debug('Fetching products from', apiUrl);
 
-    fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        let items = data.products || data;
-
-        // Si hay subcategoría (marca) seleccionada y estamos viendo una categoría concreta,
-        // filtramos los productos por brand
-        if (subcategory && category && category !== 'todos') {
-          items = (items || []).filter(p => p.brand === subcategory);
+        const res = await fetch(apiUrl);
+        if (!res.ok) {
+          console.error('Products fetch failed:', res.status, res.statusText);
+          setProducts([]);
+          updateCategoryName(category, searchQuery, 0, subcategory);
+          setLoading(false);
+          return;
         }
 
-        setProducts(items);
-        updateCategoryName(category, searchQuery, items?.length, subcategory);
+        const data = await res.json();
+        // data puede venir como { products: [...] } o como un array
+        let items = Array.isArray(data) ? data : (data.products || []);
+
+        // Filtrar por subcategoría (brand) si corresponde
+        if (subcategory && category && category !== 'todos') {
+          items = (items || []).filter(p => p && p.brand === subcategory);
+        }
+
+  setProducts(items || []);
+  updateCategoryName(category, searchQuery, (items || []).length, subcategory);
+  console.debug('Products fetched:', (items || []).length);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setProducts([]);
+        updateCategoryName(category, searchQuery, 0, subcategory);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchProducts();
   }, [category, searchQuery, subcategory]);
 
   const updateCategoryName = (currentCategory, currentSearch, productCount, currentSubcategory) => {
@@ -95,6 +107,11 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
           <h2 className="text-4xl font-bold text-gray-800 mb-4">
             {categoryName}
           </h2>
+          <div className="text-sm text-gray-500 mb-2">
+            <span>Categoria: {String(category)}</span>
+            {subcategory && <span> · Marca: {String(subcategory)}</span>}
+            <span> · Productos: {products.length}</span>
+          </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {products.length} {searchQuery ? 'resultados' : 'productos'} encontrados
           </p>

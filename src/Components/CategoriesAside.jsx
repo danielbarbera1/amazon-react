@@ -12,7 +12,8 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
       .then(res => res.json())
       .then(data => {
         const formattedCategories = data.map((category) => ({
-          id: category,
+          // Asegurarnos que el id es primitivo (string) para usar como key
+          id: String(category),
           name: formatCategoryName(category),
           count: Math.floor(Math.random() * 50) + 10,
           icon: getCategoryIcon(category)
@@ -83,7 +84,8 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
 
   const getBrandsForCategory = (categoryId) => {
     const products = productsCache[categoryId] || [];
-    const brands = Array.from(new Set(products.map(p => p.brand))).filter(Boolean);
+    // Normalizar marcas a string para evitar keys que sean objetos
+    const brands = Array.from(new Set(products.map(p => String(p?.brand)))).filter(b => b && b !== 'undefined');
     return brands;
   };
 
@@ -127,8 +129,8 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
 
       {/* Lista de categorías */}
       <div className="space-y-2">
-        {categories.map((category) => (
-          <div key={category.id}>
+        {categories.map((category, idx) => (
+          <div key={`category-${category.id ?? idx}`}>
             <div className="flex items-center justify-between">
               <button
                 onClick={() => { onCategorySelect(category.id); onSubcategorySelect(null); }}
@@ -168,11 +170,11 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
                 ) : (
                   getBrandsForCategory(category.id).map(brand => (
                     <button
-                      key={brand}
+                      key={`${category.id}-${String(brand)}`}
                       onClick={() => { onCategorySelect(category.id); onSubcategorySelect(brand); }}
                       className="w-full text-left text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 p-2 rounded"
                     >
-                      {brand}
+                      {String(brand)}
                     </button>
                   ))
                 )}
