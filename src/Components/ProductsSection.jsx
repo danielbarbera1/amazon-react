@@ -5,6 +5,8 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('Productos');
+  const [lastApiUrl, setLastApiUrl] = useState(null);
+  const [lastError, setLastError] = useState(null);
 
   const getApiUrl = (category, searchQuery) => {
     if (searchQuery) return `https://dummyjson.com/products/search?q=${encodeURIComponent(searchQuery)}`;
@@ -20,9 +22,13 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
         // Debug: mostrar la URL que estamos consultando
         console.debug('Fetching products from', apiUrl);
 
+        setLastApiUrl(apiUrl);
+        setLastError(null);
         const res = await fetch(apiUrl);
         if (!res.ok) {
-          console.error('Products fetch failed:', res.status, res.statusText);
+          const msg = `Products fetch failed: ${res.status} ${res.statusText}`;
+          console.error(msg);
+          setLastError(msg);
           setProducts([]);
           updateCategoryName(category, searchQuery, 0, subcategory);
           setLoading(false);
@@ -43,6 +49,7 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
   console.debug('Products fetched:', (items || []).length);
       } catch (err) {
         console.error('Error fetching products:', err);
+        setLastError(String(err?.message || err));
         setProducts([]);
         updateCategoryName(category, searchQuery, 0, subcategory);
       } finally {
@@ -112,6 +119,11 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
             {subcategory && <span> · Marca: {String(subcategory)}</span>}
             <span> · Productos: {products.length}</span>
           </div>
+          {/* Debug: URL y error de fetch (visible sólo mientras depuras) */}
+          <div className="text-xs text-gray-400 mb-4">
+            {lastApiUrl && <div>URL: <span className="text-ellipsis break-all">{lastApiUrl}</span></div>}
+            {lastError && <div className="text-red-500">Error: {lastError}</div>}
+          </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {products.length} {searchQuery ? 'resultados' : 'productos'} encontrados
           </p>
@@ -132,13 +144,15 @@ const ProductsSection = ({ category, searchQuery, subcategory }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(product => (
+            {products.map((product, pIdx) => (
               <Card
-                key={product.id}
+                key={`product-${String(product?.id ?? pIdx)}`}
                 title={product.title}
                 description={`${product.description.substring(0, 100)}...`}
                 icon="📦"
                 buttonText={`$${product.price}`}
+                // Pasar la imagen real del producto (thumbnail o primera imagen)
+                image={product.thumbnail || (Array.isArray(product.images) ? product.images[0] : undefined)}
                 imageSize={250}
                 onButtonClick={() => console.log('Producto:', product.title)}
               />

@@ -11,13 +11,35 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
     fetch('https://dummyjson.com/products/categories')
       .then(res => res.json())
       .then(data => {
-        const formattedCategories = data.map((category) => ({
-          // Asegurarnos que el id es primitivo (string) para usar como key
-          id: String(category),
-          name: formatCategoryName(category),
-          count: Math.floor(Math.random() * 50) + 10,
-          icon: getCategoryIcon(category)
-        }));
+        // La API puede devolver un array de strings (p.ej. ['smartphones', ...])
+        // o un array de objetos ({ slug, name, url }). Soportamos ambos formatos.
+        const formattedCategories = (data || []).map((categoryItem) => {
+          let id = null;
+          let name = null;
+          let raw = null;
+
+          if (typeof categoryItem === 'string') {
+            id = categoryItem;
+            raw = categoryItem;
+            name = formatCategoryName(categoryItem);
+          } else if (categoryItem && typeof categoryItem === 'object') {
+            // Preferir slug cuando exista
+            id = categoryItem.slug || categoryItem.name || String(categoryItem);
+            raw = id;
+            name = categoryItem.name || formatCategoryName(id);
+          } else {
+            id = String(categoryItem);
+            raw = id;
+            name = formatCategoryName(id);
+          }
+
+          return {
+            id: String(id), // id primitivo para keys y queries
+            name,
+            count: Math.floor(Math.random() * 50) + 10,
+            icon: getCategoryIcon(raw)
+          };
+        });
         setCategories(formattedCategories);
         setLoading(false);
       })
@@ -37,16 +59,27 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
   };
 
   const getCategoryIcon = (category) => {
-    const categoryStr = typeof category === 'string' ? category : category.slug;
-    
+    const categoryStr = String(category || '').toLowerCase();
+
+    // Normalizar claves: la API puede usar guiones (p.ej. 'skin-care'),
+    // además incluir variantes sin guiones
+    const keyVariants = [
+      categoryStr,
+      categoryStr.replace(/-/g, ''),
+      categoryStr.replace(/\s+/g, '-'),
+      categoryStr.replace(/\s+/g, '')
+    ];
+
     const iconMap = {
       'smartphones': '📱',
       'laptops': '💻',
       'fragrances': '🌸',
+      'skin-care': '🧴',
       'skincare': '🧴',
       'beauty': '💄',
       'groceries': '🛒',
       'home-decoration': '🏠',
+      'homedecoration': '🏠',
       'furniture': '🛋️',
       'tops': '👕',
       'womens-dresses': '👗',
@@ -57,29 +90,49 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
       'womens-watches': '⌚',
       'womens-bags': '👜',
       'womens-jewellery': '💍',
+      'womens-jewelry': '💍',
       'sunglasses': '🕶️',
       'automotive': '🚗',
       'motorcycle': '🏍️',
-      'lighting': '💡'
+      'lighting': '💡',
+      'kitchen-accessories': '🍽️',
+      'mobile-accessories': '📱',
+      'sports-accessories': '🏅',
+      'tablets': '📱',
+      'vehicle': '🚚'
     };
 
-    return iconMap[categoryStr] || '📦';
+    for (const v of keyVariants) {
+      if (iconMap[v]) return iconMap[v];
+    }
+
+    return '📦';
+  };
+
+  const fetchProductsForCategory = async (categoryId) => {
+    if (!categoryId) return;
+    if (productsCache[categoryId]) return; // already fetched
+    try {
+      const res = await fetch(`https://dummyjson.com/products/category/${encodeURIComponent(categoryId)}`);
+      const data = await res.json();
+      const products = data.products || [];
+      setProductsCache(prev => ({ ...prev, [categoryId]: products }));
+    } catch (err) {
+      console.error('Error fetching products for category:', categoryId, err);
+    }
   };
 
   const toggleExpand = async (categoryId) => {
     setExpandedCategory(prev => (prev === categoryId ? null : categoryId));
+    if (categoryId) await fetchProductsForCategory(categoryId);
+  };
 
-    // If opening and not cached, fetch products for this category to build subcategories (brands)
-    if (!productsCache[categoryId]) {
-      try {
-        const res = await fetch(`https://dummyjson.com/products/category/${categoryId}`);
-        const data = await res.json();
-        const products = data.products || [];
-        setProductsCache(prev => ({ ...prev, [categoryId]: products }));
-      } catch (err) {
-        console.error('Error fetching products for category:', categoryId, err);
-      }
-    }
+  const handleCategoryClick = async (categoryId) => {
+    // Seleccionar categoría y abrir subcategorías al hacer clic
+    onCategorySelect(categoryId);
+    onSubcategorySelect(null);
+    setExpandedCategory(categoryId);
+    await fetchProductsForCategory(categoryId);
   };
 
   const getBrandsForCategory = (categoryId) => {
@@ -111,7 +164,8 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
 
       {/* Categoría "Todos" */}
       <button
-        onClick={() => { onCategorySelect('todos'); onSubcategorySelect(null); }}
+        type="button"
+        onClick={() => { onCategorySelect('todos'); onSubcategorySelect(null); setExpandedCategory(null); }}
         className={`w-full flex items-center justify-between p-4 rounded-xl transition duration-200 mb-3 ${
           selectedCategory === 'todos'
             ? 'bg-blue-50 text-blue-600 border-2 border-blue-200'
@@ -130,10 +184,11 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
       {/* Lista de categorías */}
       <div className="space-y-2">
         {categories.map((category, idx) => (
-          <div key={`category-${category.id ?? idx}`}>
+          <div key={`category-${String(category.id)}-${idx}`}>
             <div className="flex items-center justify-between">
               <button
-                onClick={() => { onCategorySelect(category.id); onSubcategorySelect(null); }}
+                type="button"
+                onClick={() => handleCategoryClick(category.id)}
                 className={`w-full text-left flex items-center space-x-3 p-3 rounded-lg transition duration-200 ${
                   selectedCategory === category.id
                     ? 'bg-blue-50 text-blue-600 border border-blue-200'
@@ -147,7 +202,8 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
               <div className="ml-2 flex items-center space-x-2">
                 <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{category.count}</span>
                 <button
-                  onClick={() => toggleExpand(category.id)}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); toggleExpand(category.id); }}
                   className="p-2 rounded-md hover:bg-gray-100"
                   aria-label={expandedCategory === category.id ? 'Cerrar subcategorías' : 'Abrir subcategorías'}
                 >
@@ -160,6 +216,7 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
               {expandedCategory === category.id && (
               <div className="pl-8 pr-2 mt-2 mb-4 space-y-2">
                 <button
+                  type="button"
                   onClick={() => { onCategorySelect(category.id); onSubcategorySelect(null); }}
                   className="w-full text-left text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 p-2 rounded"
                 >
@@ -168,9 +225,10 @@ const CategoriesAside = ({ selectedCategory, onCategorySelect, onSubcategorySele
                 {getBrandsForCategory(category.id).length === 0 ? (
                   <div className="text-sm text-gray-500 p-2">Cargando subcategorías...</div>
                 ) : (
-                  getBrandsForCategory(category.id).map(brand => (
+                  getBrandsForCategory(category.id).map((brand, bIdx) => (
                     <button
-                      key={`${category.id}-${String(brand)}`}
+                      type="button"
+                      key={`brand-${String(category.id)}-${String(brand)}-${bIdx}`}
                       onClick={() => { onCategorySelect(category.id); onSubcategorySelect(brand); }}
                       className="w-full text-left text-sm text-gray-700 hover:text-blue-600 hover:bg-gray-50 p-2 rounded"
                     >

@@ -8,7 +8,8 @@ const Card = ({
   onButtonClick,
   variant = "default",
   className = "",
-  imageSize = 150
+  imageSize = 150,
+  image // new prop: image URL (product thumbnail)
 }) => {
   const [imageSrc, setImageSrc] = useState(null);
 
@@ -16,6 +17,13 @@ const Card = ({
     let isMounted = true;
     let objectUrl = null;
 
+    // If parent provides an image URL (product.thumbnail), use it directly
+    if (image) {
+      setImageSrc(image);
+      return () => { isMounted = false; };
+    }
+
+    // Otherwise fall back to fetching a placeholder image
     const fetchImage = async () => {
       try {
         const res = await fetch(`https://dummyjson.com/image/${imageSize}`);
@@ -33,7 +41,7 @@ const Card = ({
       isMounted = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [imageSize]);
+  }, [image, imageSize]);
 
   const variants = {
     default: "bg-white border border-gray-200",

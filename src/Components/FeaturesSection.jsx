@@ -30,7 +30,7 @@ const FeaturesSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
             <div 
-              key={index}
+              key={`feature-${feature.title.replace(/\s+/g, '-').toLowerCase()}-${index}`}
               className="flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition duration-300"
             >
               <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
