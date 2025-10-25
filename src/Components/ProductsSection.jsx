@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import Card from './card';
+import Card from './Card';
 
-const ProductsSection = ({ category, searchQuery }) => {
+const ProductsSection = ({ category, searchQuery, subcategory }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('Productos');
@@ -23,24 +23,32 @@ const ProductsSection = ({ category, searchQuery }) => {
     fetch(apiUrl)
       .then(res => res.json())
       .then(data => {
-        setProducts(data.products || data);
-        updateCategoryName(category, searchQuery, data.products?.length);
+        let items = data.products || data;
+
+        // Si hay subcategoría (marca) seleccionada y estamos viendo una categoría concreta,
+        // filtramos los productos por brand
+        if (subcategory && category && category !== 'todos') {
+          items = (items || []).filter(p => p.brand === subcategory);
+        }
+
+        setProducts(items);
+        updateCategoryName(category, searchQuery, items?.length, subcategory);
         setLoading(false);
       })
       .catch(err => {
         console.error('Error:', err);
         setLoading(false);
       });
-  }, [category, searchQuery]);
+  }, [category, searchQuery, subcategory]);
 
-  const updateCategoryName = (currentCategory, currentSearch, productCount) => {
+  const updateCategoryName = (currentCategory, currentSearch, productCount, currentSubcategory) => {
     if (currentSearch) {
       setCategoryName(`Resultados para "${currentSearch}"`);
       return;
     }
 
     if (currentCategory === 'todos') {
-      setCategoryName('Todos los productos');
+      setCategoryName(currentSubcategory ? `Marca: ${currentSubcategory}` : 'Todos los productos');
       return;
     }
     
@@ -68,7 +76,8 @@ const ProductsSection = ({ category, searchQuery }) => {
       'lighting': 'Iluminación'
     };
 
-    setCategoryName(categoryNames[currentCategory] || currentCategory);
+    const base = categoryNames[currentCategory] || currentCategory;
+    setCategoryName(currentSubcategory ? `${base} · ${currentSubcategory}` : base);
   };
 
   if (loading) return (
@@ -113,6 +122,7 @@ const ProductsSection = ({ category, searchQuery }) => {
                 description={`${product.description.substring(0, 100)}...`}
                 icon="📦"
                 buttonText={`$${product.price}`}
+                imageSize={250}
                 onButtonClick={() => console.log('Producto:', product.title)}
               />
             ))}

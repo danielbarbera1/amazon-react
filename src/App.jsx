@@ -7,6 +7,7 @@ import ProductsSection from './Components/ProductsSection';
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState('todos');
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
@@ -18,7 +19,8 @@ function App() {
       <div className="flex">
         <CategoriesAside 
           selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
+          onCategorySelect={(cat) => { setSelectedCategory(cat); setSelectedSubcategory(null); }}
+          onSubcategorySelect={setSelectedSubcategory}
         />
         
         <main className="flex-1">
@@ -27,6 +29,7 @@ function App() {
           <ProductsSection 
             category={selectedCategory}
             searchQuery={searchQuery}
+            subcategory={selectedSubcategory}
           />
         </main>
       </div>
