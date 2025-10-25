@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const InicioRegistro = ({ mode = 'login', onClose, onModeChange }) => {
+const InicioRegistro = ({ mode = 'login', onClose, onModeChange, onLogin }) => {
         const active = mode === 'register' ? 'register' : 'login';
 
             const [loginUsername, setLoginUsername] = useState('');
@@ -28,14 +28,22 @@ const InicioRegistro = ({ mode = 'login', onClose, onModeChange }) => {
                     });
 
                     const data = await res.json();
-                    if (!res.ok) {
-                        setLoginResult({ error: data.message || 'Error en login' });
-                    } else {
-                        setLoginResult({ success: data });
+                        if (!res.ok) {
+                            setLoginResult({ error: data.message || 'Error en login' });
+                        } else {
+                            setLoginResult({ success: data });
                         // opcional: guardar token en localStorage
                         if (data && data.token) {
                             try { localStorage.setItem('token', data.token); } catch (err) { /* ignore */ }
                         }
+                            // notify parent (App) about successful login with user info
+                            try {
+                                const userData = data.user || data;
+                                if (onLogin) onLogin(userData);
+                                try { localStorage.setItem('user', JSON.stringify(userData)); } catch (err) { /* ignore */ }
+                            } catch (e) {
+                                // ignore
+                            }
                         // cerrar modal después de un breve delay para mostrar resultado
                         setTimeout(() => { if (onClose) onClose(); }, 900);
                     }

@@ -11,6 +11,9 @@ function App() {
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [authMode, setAuthMode] = useState(null); // 'login' | 'register' | null
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) { return null; }
+  });
 
   const openAuth = (mode = 'login') => setAuthMode(mode);
   const closeAuth = () => setAuthMode(null);
@@ -21,6 +24,11 @@ function App() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onOpenAuth={openAuth}
+        user={user}
+        onLogout={() => {
+          setUser(null);
+          try { localStorage.removeItem('user'); localStorage.removeItem('token'); } catch (e) {}
+        }}
       />
       <div className="flex">
         <CategoriesAside 
@@ -44,7 +52,7 @@ function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
           <div className="relative w-full max-w-4xl">
             <button onClick={closeAuth} className="absolute -top-3 -right-3 bg-white rounded-full p-2 shadow">✕</button>
-            <InicioRegistro mode={authMode} onClose={closeAuth} onModeChange={setAuthMode} />
+            <InicioRegistro mode={authMode} onClose={closeAuth} onModeChange={setAuthMode} onLogin={(u) => setUser(u)} />
           </div>
         </div>
       )}

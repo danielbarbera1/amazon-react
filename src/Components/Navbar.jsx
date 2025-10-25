@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-const Navbar = ({ searchQuery, onSearchChange, onOpenAuth }) => {
+const Navbar = ({ searchQuery, onSearchChange, onOpenAuth, user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -48,20 +48,34 @@ const Navbar = ({ searchQuery, onSearchChange, onOpenAuth }) => {
             </form>
           </div>
 
-          {/* Botones de login/registro - Desktop */}
+          {/* Usuario / login-register - Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={() => onOpenAuth && onOpenAuth('login')}
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
-            >
-              Iniciar Sesión
-            </button>
-            <button
-              onClick={() => onOpenAuth && onOpenAuth('register')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
-            >
-              Registrarse
-            </button>
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-gray-700 font-medium">{user?.firstName || user?.username || user?.name}</div>
+                <button
+                  onClick={() => { if (onLogout) onLogout(); }}
+                  className="text-sm px-3 py-2 rounded-md border border-gray-200 hover:bg-gray-50"
+                >
+                  Salir
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => onOpenAuth && onOpenAuth('login')}
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition duration-300"
+                >
+                  Iniciar Sesión
+                </button>
+                <button
+                  onClick={() => onOpenAuth && onOpenAuth('register')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300"
+                >
+                  Registrarse
+                </button>
+              </>
+            )}
           </div>
 
           {/* Botón menú móvil */}
@@ -129,20 +143,34 @@ const Navbar = ({ searchQuery, onSearchChange, onOpenAuth }) => {
                 </div>
               </div>
               
-              {/* Botones móviles */}
+              {/* Botones móviles / usuario */}
               <div className="flex flex-col space-y-2">
-                <button
-                  onClick={() => { onOpenAuth && onOpenAuth('login'); setIsMenuOpen(false); }}
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium text-left transition duration-300"
-                >
-                  Iniciar Sesión
-                </button>
-                <button
-                  onClick={() => { onOpenAuth && onOpenAuth('register'); setIsMenuOpen(false); }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium text-center transition duration-300"
-                >
-                  Registrarse
-                </button>
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-gray-800">{user?.firstName || user?.username || user?.name}</div>
+                    <button
+                      onClick={() => { if (onLogout) onLogout(); setIsMenuOpen(false); }}
+                      className="text-left text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium transition duration-300"
+                    >
+                      Salir
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => { onOpenAuth && onOpenAuth('login'); setIsMenuOpen(false); }}
+                      className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium text-left transition duration-300"
+                    >
+                      Iniciar Sesión
+                    </button>
+                    <button
+                      onClick={() => { onOpenAuth && onOpenAuth('register'); setIsMenuOpen(false); }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-base font-medium text-center transition duration-300"
+                    >
+                      Registrarse
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
